@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block navbar %}
+	
+    {% if current_user.is_active %}
+        {% if current_user.role == "admin" %}
+        <li><a href="{{ url_for('addhospital') }}">Add Hospital</a></li>
+        <li><a href="{{ url_for('complaint') }}">Complaints</a></li>
+        <li><a href="#">Logged in as: {{current_user.name}}</a></li>
+        {% endif %}
+        {% if current_user.role == "hospital" %}
+        <li><a href="{{ url_for('patient_list') }}">Patients</a></li>
+        <li><a href="{{ url_for('patient_add') }}">Add Patients</a></li>
+        <li><a href="{{ url_for('doctor_add') }}">Add Doctor</a></li>
+        <li><a href="{{ url_for('profilehospital', hospital_id = current_user.hospital.id) }}">Logged in as: {{current_user.name}}</a></li>
+        {% endif %}
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+	{% else %}
+	    <li><a href="{{ url_for('login') }}">Login</a></li>
+	{% endif %}
+{% endblock navbar %}
+
+
+{% block content %}
+<div class="wrapper__main">
+
+    <div class="page-wrapper bg-gra-03 p-t-45 p-b-50">
+
+        <div class="wrapper wrapper--w790">
+            <div class="row" style="z-index: 100;position: fixed;width:80%;text-align:center;margin-top:60px;margin-right: 30%;margin-left: 35%">
+                <div class="col">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+            <div class="card card-5">
+                <div class="card-heading">
+                    <h2 class="title">Search Here for Hospitals</h2>
+                </div>
+                <div class="card-body">
+                    
+                    <div style="padding-left: 0px;" class="container">
+                        
+                            <div class="col-md-12">
+                                <form href="/" method="POST">
+                                    {{ form.hidden_tag() }}
+
+                                    <div class="row">
+                                        <div>
+                                            <div style="margin-top: 10px;" class="form-group">
+                                                <label for="state" style="margin-left: 30px;" class="form-label "><b>State</b></label>
+                                                <span class = "col-sm-4">
+                                                    {{ form.state(id="state",class="custom-select selectFilter")}}
+                                                </span>
+                                            </div>
+                                        </div>  
+
+                                        <div style="margin-left: 20px;">
+                                            <div style="margin-top: 10px;" class="form-group">
+                                                <label for="district" style="margin-left: 30px;" class="form-label"><b>District</b></label>
+                                                <span class = "col-sm-4">
+                                                    {{ form.district(id="district",class="custom-select selectFilter")}}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div style="margin-left: 20px;">
+                                            <div style="margin-top: 10px;" class="form-group">
+                                                <label for="area" style="margin-left: 30px;" class="form-label "><b>Hospital Area</b></label>
+                                                <span class = "col-sm-4">
+                                                    {{ form.area(id="area",class="custom-select selectFilter")}}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div style="margin-top: 10px;" class="form-group">
+                                                <label for="na" style="margin-left: 30px;" class="form-label "><b>Hospital Name</b></label>
+                                                <span class = "col-sm-4">
+                                                    {{ form.name(id="na",class="custom-select selectFilter") }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                    <div style="margin-left: 20px;">
+                                        <div style="margin-top: 10px;" class="form-group">
+                                            <label class="form-label" style="margin-left: 30px;"><b>Sort By</b></label>
+                                            <span class = "col-sm-4">
+                                                {{ form.beds(class="custom-select selectFilter") }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                    <div style="text-align: center;">
+                                        {{form.submit(class="btn btn-secondary")}}
+                                    </div>
+                                    
+                                </form>  
+                            </div>   
+                        </div>
+                    </div>                                 
+                </div>
+            </div>
+        
+  <div class="table__main">
+    <div class="table__wrapper">
+        <h1 class="label__head">Hospital List</h1>
+        <table class="table">
+
+            
+            <tr class="table__head text-break">
+                <th class="table__cell" width="80px">Name</th>
+                <th class="table__cell" width="80px">Area</th>
+                <th class="table__cell" width="80px">District</th>
+                <th class="table__cell" width="80px">State</th>
+                <th class="table__cell" width="80px">Total Beds</th>
+                <th class="table__cell" width="90px">Available Beds</th>
+                <th class="table__cell" width="90px">Total Ward Beds</th>
+                <th class="table__cell" width="90px">Available Ward Beds</th>
+                <th class="table__cell" width="90px">Total Ward Beds with Oxygen</th>
+                <th class="table__cell" width="90px">Available Ward Beds with Oxygen</th>
+                <th class="table__cell" width="90px">Total ICU Beds</th>
+                <th class="table__cell" width="90px">Available ICU Beds</th>
+                <th class="table__cell" width="90px">Total ICU Beds with Oxygen</th>
+                <th class="table__cell" width="90px">Available ICU Beds with Oxygen</th>
+            </tr>
+
+            {% for row in hospitals.items %}  
+            
+            
+            <tr style="text-align: center;" class="table__row">
+                <td class="table__cell"><a href="{{ url_for('profilehospital', hospital_id = row.id) }}">{{row.name.title()}}</a></td>
+                <td class="table__cell">{{row.area.title()}}</td>
+                <td class="table__cell">{{row.district.title()}}</td>
+                <td class="table__cell">{{row.state.title()}}</td>
+                <td class="table__cell">{{row.total_beds}}</td>
+                <td class="table__cell">{{row.available_beds}}</td>
+                <td class="table__cell">{{row.total_ward_beds}}</td>
+                <td class="table__cell">{{row.available_ward_beds}}</td>
+                <td class="table__cell">{{row.total_ward_beds_with_oxygen}}</td>
+                <td class="table__cell">{{row.available_ward_beds_with_oxygen}}</td>
+                <td class="table__cell">{{row.total_icu_beds}}</td>
+                <td class="table__cell">{{row.available_icu_beds}}</td>
+                <td class="table__cell">{{row.total_icu_beds_with_oxygen}}</td>
+                <td class="table__cell">{{row.available_icu_beds_with_oxygen}}</td>
+                
+            </tr>
+            
+            
+            {% endfor %}
+
+        </table>
+
+        <div style="text-align: center;">
+        {% for page_num in hospitals.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+            {% if page_num %}
+                {% if hospitals.page == page_num  %}
+                    <a  class="btn btn-light mb-4" href="{{url_for('hospital', page=page_num, name=name, district=district, state=state, area=area, beds=beds) }}">{{ page_num }}</a>
+                {% else %}
+                    <a  class="btn btn-outline-light mb-4" href="{{ url_for('hospital', page=page_num, name=name, district=district, state=state, area=area, beds=beds) }}">{{ page_num }}</a>
+                {% endif %}
+            {% else %}
+            <span style="color: white;">...</span>
+            {% endif %}
+        {% endfor %}
+            </div>
+
+    </div>
+      
+  </div>
+      
+        
+        <script src="http://code.jquery.com/jquery.min.js"></script>
+	<script>
+	$(".selectFilter").on("change",function(){var e=$(this).data("target"),i=$(this).find(":selected").data("ref");$("select."+e).val("-1"),null==i?$("select."+e).find("option").each(function(){console.log("inside undefined"),$(this).removeAttr("disabled hidden")}):$("select."+e).find("option").each(function(){var e=$(this).data("belong"),t=$(this).val();i!=e&&-1!=t?($(this).prop("disabled",!0),$(this).prop("hidden",!0)):($(this).prop("disabled",!1),$(this).prop("hidden",!1))})});
+	</script>
+	<script>
+		$(document).ready(function(){
+			$("#tableSearch").on("keyup", function() {
+				var value = $(this).val().toLowerCase();
+				$("#myTable tr").filter(function() {
+					$(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+				});
+			});
+		});
+
+    </script>
+</div>
+        
+</div>
+<script type="text/javascript">
+    state_select = document.getElementById('state');
+    district_select = document.getElementById('district');
+    area_select = document.getElementById('area');
+    hospital_select = document.getElementById('na');
+    console.log('state', state_select);
+    state_select.onchange = function(){
+        state = state_select.value;
+        console.log('state',state)
+        fetch('district/'+ state).then(function(response){
+            response.json().then(function(data){
+                optionHTML = '';
+                console.log('districtstate', data.districtstate);
+                for (s of data.districtstate){
+                    optionHTML += '<option value="'+ s.value +'">' + s.display + '</option>'
+                }
+                district_select.innerHTML = optionHTML;
+                district = district_select.value;
+                console.log('state select',state_select.value)
+                console.log('district',district)
+                fetch('area/'+ district).then(function(response){
+                    response.json().then(function(data){
+                        optionHTML = '';
+                        console.log('areadistrict', data.areadistrict);
+                        for (s1 of data.areadistrict){
+                            optionHTML += '<option value="'+ s1.value +'">' + s1.display + '</option>'
+                        }
+                        area_select.innerHTML = optionHTML;
+                        area = area_select.value;
+                        console.log('area',area)
+                        fetch('hospitals/'+ area).then(function(response){
+                            response.json().then(function(data){
+                                optionHTML = '';
+                                console.log('hospitalarea', data.hospitalarea);
+                                for (s2 of data.hospitalarea){
+                                    optionHTML += '<option value="'+ s2.value +'">' + s2.display + '</option>'
+                                }
+                                hospital_select.innerHTML = optionHTML;
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    }
+    district_select.onchange = function(){
+        district = district_select.value;
+        console.log('state select',state_select.value)
+        console.log('district',district)
+        fetch('area/'+ district).then(function(response){
+            response.json().then(function(data){
+                optionHTML = '';
+                console.log('areadistrict', data.areadistrict);
+                for (s1 of data.areadistrict){
+                    optionHTML += '<option value="'+ s1.value +'">' + s1.display + '</option>'
+                }
+                area_select.innerHTML = optionHTML;
+                area = area_select.value;
+                console.log('area',area)
+                fetch('hospitals/'+ area).then(function(response){
+                    response.json().then(function(data){
+                        optionHTML = '';
+                        console.log('hospitalarea', data.hospitalarea);
+                        for (s2 of data.hospitalarea){
+                            optionHTML += '<option value="'+ s2.value +'">' + s2.display + '</option>'
+                        }
+                        hospital_select.innerHTML = optionHTML;
+                    });
+                });
+            });
+        });
+    }
+    area_select.onchange = function(){
+        area = area_select.value;
+        console.log('area',area)
+        fetch('hospitals/'+ area).then(function(response){
+            response.json().then(function(data){
+                optionHTML = '';
+                console.log('hospitalarea', data.hospitalarea);
+                for (s2 of data.hospitalarea){
+                    optionHTML += '<option value="'+ s2.value +'">' + s2.display + '</option>'
+                }
+                hospital_select.innerHTML = optionHTML;
+            });
+        });
+    }
+</script>
+{% endblock content %}

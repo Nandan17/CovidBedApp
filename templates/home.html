@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block navbar %}
+	{% if current_user.is_authenticated  %}
+		<li><a href="{{ url_for('hospital') }}">Hospitals</a></li>
+		{% if current_user.role == "admin" %}
+		<li><a href="{{ url_for('addhospital') }}">Add Hospital</a></li>
+		<li><a href="{{ url_for('complaint') }}">Complaints</a></li>
+		<li><a href="#">Logged in as: {{current_user.name}}</a></li>
+		{% endif %}
+		{% if current_user.role == "hospital" %}
+		<li><a href="{{ url_for('patient_list') }}">Patients</a></li>
+		<li><a href="{{ url_for('patient_add') }}">Add Patients</a></li>
+		<li><a href="{{ url_for('doctor_add') }}">Add Doctor</a></li>
+		<li><a href="{{ url_for('profilehospital', hospital_id = current_user.hospital.id) }}">Logged in as: {{current_user.name}}</a></li>
+		{% endif %}
+		
+		<li><a href="{{ url_for('logout') }}">Logout</a></li>
+	{% else %}
+		<li><a href="#about">About</a></li>
+		<li><a href="#contact">Contact</a></li>
+		<li><a href="{{ url_for('hospital') }}">Hospitals</a></li>
+		<li><a href="{{ url_for('login') }}">Login</a></li>
+	{% endif %}
+{% endblock navbar %}
+
+
+{% block content %}
+
+<!-- Header Section -->
+<div class="header__main" id="home" data-aos="fade-up" data-aos-duration="1000">
+	<div class="header__wrapper">
+		<div class="row" style="z-index: 100;position: fixed;margin-top: 50px;width:80%;text-align:center">
+			<div class="col">
+				{% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+			</div>
+		</div>
+		<div class="column__left">
+			<h1>Covid Bed Finder</h1>
+			<p>Get details of bed available in your region with a click</p>
+			<a href="{{ url_for('hospital') }}"><button class="button btn1">Get Hospital List</button></a>
+		</div>
+		<div class="column__right" data-aos="fade-left" data-aos-duration="1000">
+			<img src="{{ url_for('static', filename='img/nurse1.png') }}" class="header__img">
+		</div>
+	</div>
+</div>
+
+<!-- About Section -->
+     <div class="about__section" id="about" data-aos="fade-up" data-aos-duration="1000">
+      <div class="left__about">
+          <div class="about__box" data-aos="fade-right" data-aos-duration="1000">
+              <img src="{{ url_for('static', filename='img/covid.jpg') }}" class="about__img">
+          </div>
+      </div>
+      <div class="right__about">
+          <div class="about__text">
+              <h2>About Us</h2><br/>
+              <p>In the present day, the entire world is facing the issue of the pandemic. We have been seeing that people are losing their lives without getting hospitalized in time. So we have come up with Covid Bed Finder. On this website, you can get real-time information about the availability of beds in different hospitals across the cities.</p>
+              <h1>YOUR LIFE OUR PRIOIRTY</h1>
+          </div> 
+      </div>
+     </div>
+
+<!-- Contact Section -->
+     <div class="contact__header" id="contact" data-aos="fade-up" data-aos-duration="1000">
+     	<div class="contact__wrapper">
+     		<div class="row contact__box container">
+     			
+     			<form class="form-horizontal" method="POST">
+					{{ form.hidden_tag() }}
+     				<legend class="text-center">Contact us:</legend>
+     				<fieldset>
+	     				<div class="form-group col">
+	     					
+	     					<div class="col">
+
+     							{{ form.name(class="col form-control") }}
+
+	     					</div>
+	     				</div>
+	     				{% for error in form.name.errors %}
+			                <span style="color: red;">{{ error }}</span>
+			            {% endfor %}
+	     				<div class="form-group col">
+	     					
+	     					<div class="col">
+	     						{{ form.phone(class="col form-control") }}
+
+	     					</div>
+	     				</div>
+	     				{% for error in form.phone.errors %}
+		                <span style="color: red;">{{ error }}</span>
+		                {% endfor %}
+	     				<div class="form-group col">
+	     					
+	     					<div class="col">
+	     						{{ form.content(class="col form-control",rows="6") }}
+
+	     					</div>
+	     				</div>
+	     				{% for error in form.content.errors %}
+		                <span style="color: red;">{{ error }}</span>
+		                {% endfor %}
+     				</fieldset>
+     				<fieldset>
+     					<div class="col">
+
+     						{{ form.submit(class="button btn2") }}
+     					</div>
+     					
+     				</fieldset>
+     			</form>
+     		</div>
+     		<div class="contact__right">
+     			<div class="report__wrapper">
+     				<div class="box box1" data-aos="flip-down">
+     					<div class="box_left">
+     						<h1>Total Cases: </h1>
+	     					<p>{{ total }}</p>
+     					</div>
+	     				<div class="box_right">
+	     					<img src="{{ url_for('static', filename='img/total.svg') }}" class="count_logo">
+	     				</div>
+	     			</div>
+	     			<div class="box box2" data-aos="flip-down">
+	     				<div class="box_left">
+		     				<h1>Total Active: </h1>
+		     				<p>{{ active }}</p>
+		     			</div>
+		     			<div class="box_right">
+	     					<img src="{{ url_for('static', filename='img/active.svg') }}" class="count_logo">
+	     				</div>
+	     			</div>
+	     			<div class="box box3" data-aos="flip-down">
+	     				<div class="box_left">
+	     					<h1>Total Recovered: </h1>
+	     					<p>{{ recovered }}</p>
+	     				</div>
+	     				<div class="box_right">
+	     					<img src="{{ url_for('static', filename='img/recovered.svg') }}" class="count_logo">
+	     				</div>
+	     			</div>
+	     			<div class="box box4" data-aos="flip-down">
+	     				<div class="box_left">
+	     					<h1>Total Deaths: </h1>
+	     					<p>{{ deaths }}</p>
+	     				</div>
+	     				<div class="box_right">
+	     					<img src="{{ url_for('static', filename='img/death.svg') }}" class="count_logo">
+	     				</div> 
+	     			</div>
+     			</div>
+     		</div>
+     	</div>
+     </div>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+  AOS.init();
+</script>
+{% endblock content %}

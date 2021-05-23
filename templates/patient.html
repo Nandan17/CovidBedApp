@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block navbar %}
+	<li><a href="{{ url_for('hospital') }}">Hospitals</a></li>
+		{% if current_user.is_authenticated %}
+			{% if current_user.role == "admin" %}
+				<li><a href="{{ url_for('addhospital') }}">Add Hospital</a></li>
+				<li><a href="{{ url_for('complaint') }}">Complaints</a></li>
+				<li><a href="#">Logged in as: {{current_user.name}}</a></li>
+			{% endif %}
+			{% if current_user.role == "hospital" %}
+				<li><a href="{{ url_for('patient_add') }}">Add Patients</a></li>
+				<li><a href="{{ url_for('doctor_add') }}">Add Doctor</a></li>
+				<li><a href="{{ url_for('profilehospital', hospital_id = current_user.hospital.id) }}">Logged in as: {{current_user.name}}</a></li>
+			{% endif %}
+			<li><a href="{{ url_for('logout') }}">Logout</a></li>
+		{% endif %}
+{% endblock navbar %}
+{% block content %}
+<div class="row" style="z-index: 100;position: fixed;width:50%;text-align:center;margin-top:60px;margin-right: 30%;margin-left: 25%">
+			<div class="col">
+				{% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+			</div>
+		</div>
+<!-- Table Section -->
+<div class="table__header">
+	<div class="table__wrapper">
+		
+		<h1 class="label__head">Hospital Report</h1>
+		<table class="table__content">
+			<tr>
+				<td colspan="4" class="report__head">
+					<label>Cumulative Totals </label>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label>Total Allocated Beds for Covid-19: </label>
+				</td>
+				<td >
+					<label>{{ hospital.total_beds }}</label>
+				</td>
+				<td>
+					<label>Total Vacant Beds for Covid-19: </label>
+				</td>
+				<td>
+					<label>{{ hospital.available_beds }}</label>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label>Allocated Beds for Wards - without Oxygen: </label>
+				</td>
+				<td>
+					<label>{{ hospital.total_ward_beds }}</label>
+				</td>
+				<td>
+					<label>Vacant Beds for Wards - without Oxygen: </label>
+				</td>
+				<td>
+					<label>{{ hospital.available_ward_beds }}</label>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label>Allocated Wards Beds with Oxygen: </label>
+				</td>
+				<td>
+					<label>{{ hospital.total_ward_beds_with_oxygen }} </label>
+				</td>
+				<td>
+					<label>Vacant Wards Beds with Oxygen: </label>
+				</td>
+				<td>
+					<label>{{ hospital.available_ward_beds_with_oxygen }}</label>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label>Allocated Beds for ICU without Ventilator: </label>
+				</td>
+				<td>
+					<label>{{ hospital.total_icu_beds }}</label>
+				</td>
+				<td>
+					<label>Vacant Beds for ICU without Ventilator: </label>
+				</td>
+				<td>
+					<label>{{ hospital.available_icu_beds }}</label>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label>Allocated of ICU Beds With Ventilator: </label>
+				</td>
+				<td>
+					<label>{{ hospital.total_icu_beds_with_oxygen }}</label>
+				</td>
+				<td>
+					<label>Vacant ICU Beds With Ventilator: </label>
+				</td>
+				<td>
+					<label>{{ hospital.available_icu_beds_with_oxygen }}</label>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+<!-- Patient View -->
+<div class="patient__header" id="tableview">
+	<label class="label__head">List of Patients Admitted</label></br></br>
+	<div class="patient__wrapper">
+
+		<table class="table__box">
+  <thead>
+    <tr>
+      <th class="th-sm">Name
+
+      </th>
+      <th class="th-sm">Status
+
+      </th>
+      <th class="th-sm">Bed Number
+
+      </th>
+      <th class="th-sm">Bed Type
+
+      </th>
+      <th class="th-sm">Admit Date
+
+      </th>
+      <th class="th-sm">Discharge Date
+
+      </th>
+      
+      
+    </tr>
+  </thead>
+  <tbody>
+  {% for patient in patients.items %}
+    <tr>
+      <td><a href="{{ url_for('patient_profile', patient_id=patient.id) }}">{{ patient.name.title() }}</a></td>
+      <td>{{ patient.status.title() }}</td>
+      <td>{{ patient.bed.bed_number }}</td>
+      <td>{{ patient.bed.bed_type.title() }}</td>
+      <td>{{ patient.admit_date.strftime('%Y-%m-%d') }}</td>
+        {% if patient.discharge_date %}
+            <td>{{ patient.discharge_date.strftime('%Y-%m-%d') }}</td>
+        {% else %}
+            <td>----</td>
+        {% endif %}
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+        {% for page_num in patients.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if page_num %}
+            {% if patients.page == page_num %}
+                <a class="btn btn-info mb-4" href="{{ url_for('patient_list', page=page_num, current_hospital=hospital.id) }}">{{ page_num }}</a>
+            {% else %}
+                <a class="btn btn-outline-info mb-4" href="{{ url_for('patient_list', page=page_num, current_hospital=hospital.id) }}">{{ page_num }}</a>
+            {% endif %}
+        {% else %}
+            ...
+        {% endif %}
+    {% endfor %}
+	</div>
+</div>
+
+{% endblock content %}
